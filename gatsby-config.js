@@ -4,92 +4,89 @@ const shouldAnalyseBundle = process.env.ANALYSE_BUNDLE
 const googleAnalyticsTrackingId = process.env.GOOGLE_ANALYTICS_ID
 
 module.exports = {
-  siteMetadata: {
-    siteTitleAlt: `Minimal Blog - Gatsby Theme`,
-  },
-  flags: {
-    FAST_DEV: true,
-  },
-  plugins: [
-    {
-      resolve: `@lekoarts/gatsby-theme-minimal-blog`,
-      // See the theme's README for all available options
-      options: {
-        navigation: [
-          {
-            title: `Blog`,
-            slug: `/blog`,
-          },
-          {
-            title: `About`,
-            slug: `/about`,
-          },
-        ],
-        externalLinks: [
-          {
-            name: `Twitter`,
-            url: `https://twitter.com/lekoarts_de`,
-          },
-          {
-            name: `Homepage`,
-            url: `https://www.lekoarts.de?utm_source=minimal-blog&utm_medium=Starter`,
-          },
-        ],
-      },
+    siteMetadata: {
+        siteTitle: `ashwanth.io`,
+        siteTitleAlt: `Ashwanth A R`,
+        siteHeadline: `Developer Blog - Ashwanth`,
+        siteUrl: `https://minimal-blog.lekoarts.de`,
+        siteDescription: `Typography driven, feature-rich blogging theme with minimal aesthetics. Includes tags/categories support and extensive features for code blocks such as live preview, line numbers, and line highlighting.`,
+        siteLanguage: `en`,
+        siteImage: `/banner.jpg`,
+        author: `@ashwanth1109`,
     },
-    {
-      resolve: `gatsby-omni-font-loader`,
-      options: {
-        enableListener: true,
-        preconnect: [`https://fonts.gstatic.com`],
-        interval: 300,
-        timeout: 30000,
-        web: [
-          {
-            name: `IBM Plex Sans`,
-            file: `https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap`,
-          },
-        ],
-      },
+    flags: {
+        FAST_DEV: true,
     },
-    googleAnalyticsTrackingId && {
-      resolve: `gatsby-plugin-google-analytics`,
-      options: {
-        trackingId: process.env.GOOGLE_ANALYTICS_ID,
-      },
-    },
-    `gatsby-plugin-sitemap`,
-    {
-      resolve: `gatsby-plugin-manifest`,
-      options: {
-        name: `minimal-blog - @lekoarts/gatsby-theme-minimal-blog`,
-        short_name: `minimal-blog`,
-        description: `Typography driven, feature-rich blogging theme with minimal aesthetics. Includes tags/categories support and extensive features for code blocks such as live preview, line numbers, and code highlighting.`,
-        start_url: `/`,
-        background_color: `#fff`,
-        theme_color: `#6B46C1`,
-        display: `standalone`,
-        icons: [
-          {
-            src: `/android-chrome-192x192.png`,
-            sizes: `192x192`,
-            type: `image/png`,
-          },
-          {
-            src: `/android-chrome-512x512.png`,
-            sizes: `512x512`,
-            type: `image/png`,
-          },
-        ],
-      },
-    },
-    `gatsby-plugin-offline`,
-    `gatsby-plugin-gatsby-cloud`,
-    `gatsby-plugin-netlify`,
-    {
-      resolve: `gatsby-plugin-feed`,
-      options: {
-        query: `
+    plugins: [
+        {
+            resolve: `@lekoarts/gatsby-theme-minimal-blog`,
+            // See the theme's README for all available options
+            options: {
+                externalLinks: [
+                    {
+                        name: `Twitter`,
+                        url: `https://twitter.com/ashwanth1109`,
+                    },
+                    {
+                        name: `LinkedIn`,
+                        url: `https://www.linkedin.com/in/ashwanth-a-r/`,
+                    },
+                ],
+            },
+        },
+        {
+            resolve: `gatsby-omni-font-loader`,
+            options: {
+                enableListener: true,
+                preconnect: [`https://fonts.gstatic.com`],
+                interval: 300,
+                timeout: 30000,
+                web: [
+                    {
+                        name: `Source Sans Pro`,
+                        file: `https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap`,
+                    },
+                ],
+            },
+        },
+        googleAnalyticsTrackingId && {
+            resolve: `gatsby-plugin-google-analytics`,
+            options: {
+                trackingId: process.env.GOOGLE_ANALYTICS_ID,
+            },
+        },
+        `gatsby-plugin-sitemap`,
+        {
+            resolve: `gatsby-plugin-manifest`,
+            options: {
+                name: `Ashwanth's Blog`,
+                short_name: `minimal-blog`,
+                description: `Typography driven, feature-rich blogging theme with minimal aesthetics. Includes tags/categories support and extensive features for code blocks such as live preview, line numbers, and code highlighting.`,
+                start_url: `/`,
+                background_color: `#fff`,
+                theme_color: `#6B46C1`,
+                display: `standalone`,
+                icons: [
+                    {
+                        src: `/android-chrome-192x192.png`,
+                        sizes: `192x192`,
+                        type: `image/png`,
+                    },
+                    {
+                        src: `/android-chrome-512x512.png`,
+                        sizes: `512x512`,
+                        type: `image/png`,
+                    },
+                ],
+            },
+        },
+        `gatsby-plugin-offline`,
+        `gatsby-plugin-gatsby-cloud`,
+        `gatsby-plugin-netlify`,
+        {
+            resolve: `gatsby-plugin-feed`,
+            options: {
+                query: `
           {
             site {
               siteMetadata {
@@ -101,23 +98,23 @@ module.exports = {
             }
           }
         `,
-        feeds: [
-          {
-            serialize: ({ query: { site, allPost } }) =>
-              allPost.nodes.map((post) => {
-                const url = site.siteMetadata.siteUrl + post.slug
-                const content = `<p>${post.excerpt}</p><div style="margin-top: 50px; font-style: italic;"><strong><a href="${url}">Keep reading</a>.</strong></div><br /> <br />`
+                feeds: [
+                    {
+                        serialize: ({query: {site, allPost}}) =>
+                            allPost.nodes.map((post) => {
+                                const url = site.siteMetadata.siteUrl + post.slug
+                                const content = `<p>${post.excerpt}</p><div style="margin-top: 50px; font-style: italic;"><strong><a href="${url}">Keep reading</a>.</strong></div><br /> <br />`
 
-                return {
-                  title: post.title,
-                  date: post.date,
-                  excerpt: post.excerpt,
-                  url,
-                  guid: url,
-                  custom_elements: [{ "content:encoded": content }],
-                }
-              }),
-            query: `
+                                return {
+                                    title: post.title,
+                                    date: post.date,
+                                    excerpt: post.excerpt,
+                                    url,
+                                    guid: url,
+                                    custom_elements: [{"content:encoded": content}],
+                                }
+                            }),
+                        query: `
               {
                 allPost(sort: { fields: date, order: DESC }) {
                   nodes {
@@ -129,19 +126,19 @@ module.exports = {
                 }
               }
             `,
-            output: `rss.xml`,
-            title: `Minimal Blog - @lekoarts/gatsby-theme-minimal-blog`,
-          },
-        ],
-      },
-    },
-    shouldAnalyseBundle && {
-      resolve: `gatsby-plugin-webpack-bundle-analyser-v2`,
-      options: {
-        analyzerMode: `static`,
-        reportFilename: `_bundle.html`,
-        openAnalyzer: false,
-      },
-    },
-  ].filter(Boolean),
+                        output: `rss.xml`,
+                        title: `Minimal Blog - @lekoarts/gatsby-theme-minimal-blog`,
+                    },
+                ],
+            },
+        },
+        shouldAnalyseBundle && {
+            resolve: `gatsby-plugin-webpack-bundle-analyser-v2`,
+            options: {
+                analyzerMode: `static`,
+                reportFilename: `_bundle.html`,
+                openAnalyzer: false,
+            },
+        },
+    ].filter(Boolean),
 }
