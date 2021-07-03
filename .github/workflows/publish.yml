@@ -3,7 +3,7 @@ name: Publish new version of blog site
 on:
   push:
     branches:
-      - feat-gh-publish-workflow # TODO: Change this before merge
+      - main
 
 jobs:
   publish:
