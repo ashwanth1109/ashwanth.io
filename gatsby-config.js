@@ -8,8 +8,8 @@ module.exports = {
         siteTitle: `ashwanth.io`,
         siteTitleAlt: `Ashwanth A R`,
         siteHeadline: `Developer Blog - Ashwanth`,
-        siteUrl: `https://minimal-blog.lekoarts.de`,
-        siteDescription: `Typography driven, feature-rich blogging theme with minimal aesthetics. Includes tags/categories support and extensive features for code blocks such as live preview, line numbers, and line highlighting.`,
+        siteUrl: `https://ashwanth.io`,
+        siteDescription: `I write about the cloud, and everything-software under the sun.`,
         siteLanguage: `en`,
         siteImage: `/banner.jpg`,
         author: `@ashwanth1109`,
@@ -24,13 +24,17 @@ module.exports = {
             options: {
                 externalLinks: [
                     {
-                        name: `Twitter`,
-                        url: `https://twitter.com/ashwanth1109`,
+                        name: `GitHub`,
+                        url: `https://github.com/ashwanth1109`,
                     },
                     {
                         name: `LinkedIn`,
                         url: `https://www.linkedin.com/in/ashwanth-a-r/`,
                     },
+                    {
+                        name: `Twitter`,
+                        url: `https://twitter.com/ashwanth1109`,
+                    }
                 ],
             },
         },
@@ -60,8 +64,8 @@ module.exports = {
             resolve: `gatsby-plugin-manifest`,
             options: {
                 name: `Ashwanth's Blog`,
-                short_name: `minimal-blog`,
-                description: `Typography driven, feature-rich blogging theme with minimal aesthetics. Includes tags/categories support and extensive features for code blocks such as live preview, line numbers, and code highlighting.`,
+                short_name: `ashwanth-blog`,
+                description: `I write about the cloud, and everything-software under the sun.`,
                 start_url: `/`,
                 background_color: `#fff`,
                 theme_color: `#6B46C1`,
@@ -140,5 +144,6 @@ module.exports = {
                 openAnalyzer: false,
             },
         },
+        {resolve: `gatsby-plugin-s3`, options: {bucketName: `ashwanth.io`}}
     ].filter(Boolean),
 }
