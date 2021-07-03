@@ -22,6 +22,7 @@ module.exports = {
             resolve: `@lekoarts/gatsby-theme-minimal-blog`,
             // See the theme's README for all available options
             options: {
+                mdx: false,
                 externalLinks: [
                     {
                         name: `GitHub`,
@@ -35,6 +36,55 @@ module.exports = {
                         name: `Twitter`,
                         url: `https://twitter.com/ashwanth1109`,
                     }
+                ],
+            },
+        },
+        {
+            resolve: `gatsby-plugin-mdx`,
+            options: {
+                lessBabel: true,
+                extensions: [`.mdx`, `.md`],
+                gatsbyRemarkPlugins: [
+                    {
+                        resolve: "gatsby-remark-embed-video",
+                        options: {
+                            width: 1000,
+                            ratio: 1.77, // Optional: Defaults to 16/9 = 1.77
+                            related: true, //Optional: Will remove related videos from the end of an embedded YouTube video.
+                            noIframeBorder: true, //Optional: Disable insertion of <style> border: 0
+                            loadingStrategy: 'lazy', //Optional: Enable support for lazy-load offscreen iframes. Default is disabled.
+                            iframeId: false, //Optional: if true, iframe's id will be set to what is provided after 'video:' (YouTube IFrame player API requires iframe id)
+                        },
+                    },
+                    {
+                        resolve: `gatsby-remark-images`,
+                        options: {
+                            maxWidth: 1000,
+                            quality: 90,
+                            linkImagesToOriginal: false,
+                        },
+                    },
+                ],
+                plugins: [
+                    {
+                        resolve: "gatsby-remark-embed-video",
+                        options: {
+                            width: 1000,
+                            ratio: 1.77, // Optional: Defaults to 16/9 = 1.77
+                            related: true, //Optional: Will remove related videos from the end of an embedded YouTube video.
+                            noIframeBorder: true, //Optional: Disable insertion of <style> border: 0
+                            loadingStrategy: 'lazy', //Optional: Enable support for lazy-load offscreen iframes. Default is disabled.
+                            iframeId: false, //Optional: if true, iframe's id will be set to what is provided after 'video:' (YouTube IFrame player API requires iframe id)
+                        },
+                    },
+                    {
+                        resolve: `gatsby-remark-images`,
+                        options: {
+                            maxWidth: 1000,
+                            quality: 90,
+                            linkImagesToOriginal: false,
+                        },
+                    },
                 ],
             },
         },
@@ -148,5 +198,6 @@ module.exports = {
             resolve: `gatsby-plugin-s3`,
             options: {bucketName: `ashwanth.io`, protocol: `https`, hostname: `ashwanth.io`}
         }
+
     ].filter(Boolean),
 }
