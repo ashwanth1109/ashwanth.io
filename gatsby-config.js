@@ -144,6 +144,9 @@ module.exports = {
                 openAnalyzer: false,
             },
         },
-        {resolve: `gatsby-plugin-s3`, options: {bucketName: `ashwanth.io`}}
+        {
+            resolve: `gatsby-plugin-s3`,
+            options: {bucketName: `ashwanth.io`, protocol: `https`, hostname: `ashwanth.io`}
+        }
     ].filter(Boolean),
 }

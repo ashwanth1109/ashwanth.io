@@ -1,0 +1,32 @@
+name: Publish new version of blog site
+
+on:
+  push:
+    branches:
+      - feat-gh-publish-workflow # TODO: Change this before merge
+
+jobs:
+  publish:
+    name: Publish to S3 bucket and invalidate CDN cache
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{secrets.AWS_ACCESS_ID}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_KEY}}
+          aws-region: ap-south-1
+
+      - name: Build distribution
+        run: npm run build
+
+      - name: Deploy the site
+        run: npm run deploy:override
+
+      - name: Invalidate CDN cache
+        env:
+          DISTRIBUTION_ID: ${{secrets.DISTRIBUTION_ID}}
+        run: aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION_ID} --paths \"/*\"
