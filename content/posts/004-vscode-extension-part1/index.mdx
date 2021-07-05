@@ -1,0 +1,199 @@
+---
+title: "Building a Custom Editor VS Code Extension - Part 1"
+date: 2021-07-06
+slug: "/custom-editor-vscode-extension-part1"
+tags:
+- VS Code
+- Extension
+- Recipe
+---
+
+This is part 1 of a series of tutorials that will guide you through the
+process of building a custom editor vs code extension.
+
+## Phase 1 - Directory Setup, Dependency Installation
+
+1. Create the directory and initialize a node repository
+```bash
+mkdir extension
+cd extension
+npm init -y
+```
+
+2. Add a `tsconfig.json` file
+```json
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2019",
+    "lib": ["ES2019"],
+    "outDir": "out",
+    "sourceMap": true,
+    "strict": true,
+    "rootDir": "src"
+  },
+  "exclude": ["node_modules"]
+}
+```
+
+3. Install your dev dependencies using the following command:
+```bash
+npm i -D @types/node @types/vscode typescript
+```
+
+4. Set up a watch script to compile your typescript code
+```json
+{
+    "scripts": {
+        "watch": "tsc -w -p ./"
+    }
+}
+```
+
+5. Set your engine to the vscode version (check your `@types/vscode` version)
+, and your main to point to your compiled code in your build directory.
+```json
+{
+  "main": "./out/extension.js",
+  "engines": {
+    "vscode": "1.57.1"
+  }
+}
+```
+
+6. Finally, you need to create a `launch.json` and a `tasks.json` in your `.
+vscode` directory in your root so that vscode is aware about how to launch
+your extension.
+
+`launch.json`
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Extension",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/out/**/*.js"
+            ],
+            "preLaunchTask": "npm: watch"
+        }
+    ]
+}
+```
+
+`tasks.json`
+```json
+{
+    "version": "2.0.0",
+    "tasks": [{
+        "type": "npm",
+        "script": "watch",
+        "problemMatcher": "$tsc-watch",
+        "isBackground": true,
+        "presentation": {
+            "echo": true,
+            "reveal": "never",
+            "focus": false,
+            "panel": "shared",
+            "showReuseMessage": true,
+            "clear": false
+        },
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        }
+    }]
+}
+```
+
+
+## Phase 2 - Building & running your extension
+
+1. Create your custom editor in a file under the path `src/customEditor.ts`.
+```ts
+import * as vscode from 'vscode'
+
+export class CustomEditor implements vscode.CustomTextEditorProvider {
+    constructor(private readonly context: vscode.ExtensionContext) {}
+
+    public static register(context: vscode.ExtensionContext): vscode.Disposable {
+        const provider = new CustomEditor(context)
+        const providerRegistration = vscode.window.registerCustomEditorProvider(CustomEditor.viewType, provider)
+        return providerRegistration
+    }
+
+    private static readonly viewType = 'customEditor'
+
+    public async resolveCustomTextEditor(
+        document: vscode.TextDocument,
+        webviewPanel: vscode.WebviewPanel,
+        _token: vscode.CancellationToken
+    ): Promise<void> {
+        webviewPanel.webview.options = {
+            enableScripts: true
+        }
+        webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview)
+    }
+
+    private getHtmlForWebview(webview: vscode.Webview): string {
+        return /* html */`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <title>Test</title>
+            </head>
+            <body>
+                <h1>Test</h1>
+            </body>
+        `
+    }
+}
+```
+
+2. Register your custom editor to your vscode context in `src/extension.ts`
+
+```ts
+import * as vscode from 'vscode'
+import { CustomEditor } from './customEditor'
+
+export function activate(context: vscode.ExtensionContext) {
+    context.subscriptions.push(CustomEditor.register(context))
+}
+```
+
+3. Add an activation event for your custom editor to your `package.json`
+```json
+{
+  "activationEvents": [
+    "onCustomEditor:customEditor"
+  ]
+}
+```
+
+4. Set the contribution details for your custom editor in your `package.json`.
+```json
+{
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "customEditor",
+        "displayName": "Custom Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.ce"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+5. Now, hit `f5` for vscode to launch your extension in debug mode.
+Create a file with an `.ce` file type extension and open this file to see your new web view.
