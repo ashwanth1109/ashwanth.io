@@ -35,6 +35,10 @@ module.exports = {
                     {
                         name: `Twitter`,
                         url: `https://twitter.com/ashwanth1109`,
+                    },
+                    {
+                        name: `YouTube`,
+                        url: `https://www.youtube.com/channel/UC8fchbFuPdty4c2MYrSJwKw`
                     }
                 ],
             },
