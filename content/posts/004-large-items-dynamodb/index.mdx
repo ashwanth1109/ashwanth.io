@@ -12,102 +12,97 @@ tags:
 - Angular
 ---
 
-At Crossover, during the month of December (2020), January and February (2021),
-we were given some time off projects to do some research related to the usage of AWS services.
+`youtube: https://www.youtube.com/watch?v=nE3i--T-Esc`
 
-The idea was to come up with Engineering Outcomes that would affect the organization as a whole.
-This was also to support a massive movement in the organization called "Ship Every Merge" which
-was an idea for how developers across the org would build products and come up with a unifying
-ideology. So, while this process was underway, we started picking different AWS services each week,
-and to try and come up with technical decisions backed by data.
+**At Crossover**, we recently had a massive movement within the organization called **"Ship Every Merge"** (or SEM for short).
+SEM was an idea for a standardized process as to how developers across the org would build products going forward.
+While this unifying ideology was being discussed, we were given some time off projects to do some research related to the usage of AWS services.
+The idea was to come up with **Engineering Outcomes** that could be consolidated into this process for any cloud-based application.
+So, we started picking different AWS services each week, to try and come up with technical decisions backed by data.
 
-Along with my colleague, "Adrian Diaconu" (a senior software engineer in the company), I decided to
+As my first experiment, along with my colleague, **"Adrian Diaconu"** (a senior software engineer in the company), I decided to
 research on a question that we had recently hit on a project in regard to using DynamoDB.
+This post discusses this problem, the options we considered and the conclusions/insights we arrived at.
+While the problem itself was fairly straight-forward, and we had already guessed at the right solution, it was good to verify that with a POC experiment.
 
-# Problem Statement
+## Problem Statement
 
-When migrating data from an existing database to DynamoDB or creating a new database in DynamoDB, you can encounter items with large amounts of data. However, DynamoDB has a hard service limit with a maximum item size of 400 KB, which includes both attribute name binary length (UTF-8 length) and attribute value lengths (again binary length).
-
+When migrating data from an existing database to DynamoDB or creating a new database in DynamoDB, you can encounter items with large amounts of data. However, **DynamoDB has a hard service limit with a maximum item size of 400 KB**, which includes both attribute name binary length (UTF-8 length) and attribute value lengths (again binary length).
 You can see the service limit in docs [here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Limits.html#limits-items).
 
-Since each character in “String” data is represented in a byte (slightly different for “Binary” data), 400 KB means we will hit this limit with 409,600 characters. Given that this is not a lot, especially for certain kinds of data, this would be a problem that several projects could potentially run into. So, we determined that this is a high-impact problem worth solving and identifying the best solution for any given scenario.
+Since each character in “String” data is represented in a byte (slightly different for “Binary” data), 400 KB means we will hit this limit with **409,600 characters**. Given that this is not a lot, especially for certain kinds of data, this would be a problem that several projects could potentially run into. So, we determined that this is a high-impact problem worth solving and identifying the best solution for any given scenario.
 
 ![Character Limit](./character-limit.png)
 
-# Options Considered
+## Options Considered
 
 There were 3 solutions that we considered - Split, Compression and S3 Storage:
 
-1. Split and Compose Approach - Split large items into multiple records with the same partition key and use sort key or gsi to track the order of the records.
-2. Compression Approach - Compress large attribute values to fit them within the item limits in DynamoDB using compression algorithms such as GZIP or LZO
-3. S3 Storage Approach - Use Amazon S3 to store large attribute values and then store the object identifier (or access url) in DynamoDB
+1. **Split and Compose Approach** - Split large items into multiple records with the same partition key and use sort key or gsi to track the order of the records.
+2. **Compression Approach** - Compress large attribute values to fit them within the item limits in DynamoDB using compression algorithms such as GZIP or LZO
+3. **S3 Storage Approach** - Use Amazon S3 to store large attribute values and then store the object identifier (or access url) in DynamoDB
 
-Two approaches are discussed in more detail in docs [here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-use-s3-too.html).
+Two of these approaches are discussed in more detail in docs [here](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-use-s3-too.html).
 
-# Important Technical Decision
-
-Based on our findings below, we recommended that for scenarios where there is large data involved, especially if it is larger than 600 KB, S3 storage is the recommended solution.
-While the answer itself seems fairly straightforward, and was the decision we'd taken on our previous project, we now had the data to back it up.
+Based on our findings below, we recommended that for scenarios where there is large data involved, especially if it is **larger than 600 KB, S3 storage is the recommended solution**.
 
 There are a few other use cases where you could consider the other approaches.
 
-If you have a specific case, where you know that 90%+ of your data points will never exceed 400 KB and the remainder will only exceed to 500-600 KB, “Split approach” could be an option to consider based on a good understanding of what the WCU and RCU consumption look like.
+If you have a specific case, where you know that **90%+ of your data points will never exceed 400 KB** and the **remainder will only exceed to 500-600 KB**, **“Split approach” could be an option** to consider based on a good understanding of what the **WCU and RCU consumption** look like.
 
-If you have frequently repetitive and highly predictable patterns with good compression rates, you could consider the Compression approach.
+If you have **frequently repetitive and highly predictable patterns with good compression rates**, you could consider the **Compression approach**.
 
-# Experiment Goal
+## The Experiment
 
-Our goal in this experiment is to implement all the listed solutions and measure & compare the performance between these approaches.
+Our goal in this experiment was to implement all the listed solutions and measure & compare the performance between these approaches.
 
-# Experiment Setup
-
-This [repository](https://github.com/ashwanth1109/dynamodb-large-items-outcome) contains the code to set up the below CloudFormation stack, along with an Angular frontend client. You can use the application to run the experiment for various data points to understand the performance of the three approaches.
+This **[repository](https://github.com/ashwanth1109/dynamodb-large-items-outcome)** contains the code to set up the **below CloudFormation stack, along with an Angular frontend client**. You can use the application to run the experiment for various data points to understand the performance of the three approaches.
 
 ![Stack setup and flow](./stack-setup-and-flow.png)
 
-The Angular application will control the size of the item by making a HTTP request to the API Gateway REST API endpoint with the item size as a paramenter. The endpoint will invoke the appropriate lambda with this number. The lambda then generates a large text value so that the total item size meets the required item size as specified by the Angular application. Once the item is generated, the lambda will start the performance measurement and make a putItem call to DynamoDB table or puts the item in S3 before passing item access url to DynamoDB based on our solution. By measuring only the putItem operation in the lambda, we exclude any effects from network latency or item generation time.
+The **Angular application** will control the **size** of the item by making a HTTP request to the **API Gateway REST API** endpoint with the item size as a parameter. The endpoint will **invoke the appropriate lambda** with this number. The **lambda then generates a large text value** so that the total item size meets the required item size as specified by the Angular application. Once the item is generated, the lambda will start the **performance measurement** and make a putItem call to DynamoDB table or puts the item in S3 before passing item access url to DynamoDB based on our solution. By measuring only the putItem operation in the lambda, we exclude any effects from network latency or item generation time.
 
-# Key Insights
+## Key Insights
 
 For each experiment we took 3 observations to identify the general trend and discard any data point anomaly.
 
-## 1. Compression fails between 500 and 550 KB for fully random data
+**1. Compression fails between 500 and 550 KB for fully random data**
 
 For fully random data with no discernible or predictable pattern, the compression approach starts to fail between 500 KB and 550 KB. Even before this point, at least one of the other 2 solutions seem to outperform the "Compression" approach.
 
 ![Experiment 1](./experiment-1.png)
 
-## 2. Compression works for vast range with better performance for fully repeated data
+**2. Compression works for vast range with better performance for fully repeated data**
 
 When we ran the same experiment with fully repeated string (i.e. "######...") as the text value, the compression rate was exponentially better (got 0.42 KB for 400 KB of data). So, based on your compression ratio, and how predictable and repeated your data is, compression approach might be viable, but you must have a near perfect understanding of your client data.
 
 ![Experiment 2](./experiment-2.png)
 
-## 3. Split has better performance up to 700 KB of data
+**3. Split has better performance up to 700 KB of data**
 
 The next series of experiments we ran were just with the Split and S3 approaches, and we found that the Split approach performs better than S3 up to 700 KB of data. After 700 KB, we find that the two solutions start converging in terms of performance, although Split is still marginally better.
 
 ![Experiment 3](./experiment-3.png)
 
-## 4. S3 performs better above 1600 KB of data
+**4. S3 performs better above 1600 KB of data**
 
 As we start to increase our item size to 1600 KB, the Split and S3 solutions were somewhat neck and neck. Once we go higher we start to see a clear winner because Split starts performing much worse in comparison to the S3 approach as the number of records grows larger.
 
 ![Experiment 4](./experiment-4.png)
 
-## 5. For data in the order of MegaBytes (MB), only S3 is viable as a solution
+**5. For data in the order of MegaBytes (MB), only S3 is viable as a solution**
 
 This deviation in performance between the two approaches continues to grow further, as we reach item sizes in the order of MegaBytes, at which point S3 is the only viable solution.
 
 ![Experiment 5](./experiment-5.png)
 
-## 6. Split has a significant impact on WCU & RCU consumption
+**6. Split has a significant impact on WCU & RCU consumption**
 
 ![CloudWatch Metrics](./cloudwatch-metrics.png)
 
 The spike in the above image at 19:15 time was when a load of 20 dynamodb calls where made on the Angular application within the span of a few minutes. The experiment was being run on Item sizes between 1 MB and 10 MB.
 
-## 7. Lambda in Java takes longer to respond than TypeScript
+**7. Lambda in Java takes longer to respond than TypeScript**
 
 Our initial set of experiments were run in TypeScript since both of us have a natural inclination to TypeScript during iteration, and then we translated the lambdas to Java once we were sure of what setup was required for the experiment. One thing we observed was that the Lambda would complete execution in less than 3-4s consistently in the TypeScript project, whereas the Lambda in JAVA would take ~19-25s to respond during a cold start. We even experienced this sometimes, midway through the experiment.
 
@@ -115,9 +110,9 @@ Our initial set of experiments were run in TypeScript since both of us have a na
 
 ![Java Lambda](./java-lambda.png)
 
-# Benefits/Concerns with the 3 approaches
+## Benefits/Concerns with the 3 approaches
 
-## Split and Compose Approach
+**Split and Compose Approach**
 
 Some benefits with this approach are:
 
@@ -131,7 +126,7 @@ Some concerns with this approach are:
 - Implementation & maintenance is more complex.
 - You would need to manually handle the consistency across all split records for any update/delete operations as well.
 
-## Compression Approach
+**Compression Approach**
 
 Some benefits with this approach are:
 
@@ -145,7 +140,7 @@ Some concerns with this approach are:
 - Client/Lambda must compress & decompress the data which adds a layer of time complexity.
 - In general, performs the worst out of the 3 approaches across all item sizes.
 
-## S3 Storage Approach
+**S3 Storage Approach**
 
 Some benefits with this approach are:
 
